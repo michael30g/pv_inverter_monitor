@@ -1,41 +1,24 @@
-import json
 from simulation.mock_inverter import MockInverter
-
-
-def load_register_map(path: str):
-    with open(path, "r") as f:
-        return json.load(f)
-
-
-def read_inverter(inverter, register_map):
-    data = {}
-
-    for name, cfg in register_map.items():
-        reg = cfg["register"]
-        scale = cfg["scale"]
-        unit = cfg["unit"]
-
-        raw = inverter.read_registers(reg, 1)[0]
-        value = raw * scale
-
-        data[name] = {
-            "value": value,
-            "unit": unit,
-            "raw": raw
-        }
-
-    return data
+from devices.inverter_manager import InverterManager
+import time
 
 
 def main():
-    inverter = MockInverter(slave_id=1)
-    register_map = load_register_map("config/inverter_map.json")
+    manager = InverterManager()
 
-    data = read_inverter(inverter, register_map)
+    # Crear inversores simulados
+    manager.add_inverter(1, MockInverter(slave_id=1))
+    manager.add_inverter(2, MockInverter(slave_id=2))
+    manager.add_inverter(3, MockInverter(slave_id=3))
 
-    print("\n=== DATOS DEL INVERSOR ===")
-    for k, v in data.items():
-        print(f"{k}: {v['value']} {v['unit']} (raw={v['raw']})")
+    while True:
+        data = manager.read_all(address=0, count=4)
+
+        print("---- DATA SNAPSHOT ----")
+        for inv_id, registers in data.items():
+            print(f"Inverter {inv_id}: {registers}")
+
+        time.sleep(2)
 
 
 if __name__ == "__main__":

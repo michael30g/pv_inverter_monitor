@@ -1,35 +1,34 @@
 from core.inverter_interface import InverterInterface
+from core.logger import get_logger
 import random
 
 
 class MockInverter(InverterInterface):
     def __init__(self, slave_id: int):
         self.slave_id = slave_id
+        self.logger = get_logger(f"MockInverter-{slave_id}")
+        self.logger.info("Mock inverter initialized")
 
     def read_registers(self, address: int, count: int):
-        """
-        Simula la lectura de registros Modbus.
-        Devuelve una lista de enteros como lo haría un inversor real.
-        """
+        self.logger.info(
+            f"Reading registers | address={address} count={count}"
+        )
+
         registers = []
 
         for offset in range(count):
             reg = address + offset
 
             if reg == 0:
-                # Potencia instantánea (W)
-                registers.append(random.randint(500, 2000))
+                registers.append(random.randint(500, 2000))  # Power (W)
             elif reg == 1:
-                # Voltaje batería (48.0 – 54.0 V) escalado x10
-                registers.append(random.randint(480, 540))
+                registers.append(random.randint(480, 540))   # Battery V x10
             elif reg == 2:
-                # Corriente batería (0.0 – 20.0 A) escalado x10
-                registers.append(random.randint(0, 200))
+                registers.append(random.randint(0, 200))     # Battery A x10
             elif reg == 3:
-                # Estado del inversor
-                # 0 = OFF, 1 = ON, 2 = FAULT
-                registers.append(random.choice([0, 1, 2]))
+                registers.append(random.choice([0, 1, 2]))   # State
             else:
                 registers.append(0)
 
+        self.logger.info(f"Registers read: {registers}")
         return registers
