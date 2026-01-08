@@ -1,0 +1,22 @@
+{
+  "power": {
+    "register": 0,
+    "scale": 1,
+    "unit": "W"
+  },
+  "battery_voltage": {
+    "register": 1,
+    "scale": 0.1,
+    "unit": "V"
+  },
+  "battery_current": {
+    "register": 2,
+    "scale": 0.1,
+    "unit": "A"
+  },
+  "status": {
+    "register": 3,
+    "scale": 1,
+    "unit": "code"
+  }
+}
