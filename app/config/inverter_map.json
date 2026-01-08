@@ -1,22 +1,45 @@
 {
-  "power": {
-    "register": 0,
-    "scale": 1,
-    "unit": "W"
+  "mode": "mock",
+  "modbus": {
+    "port": "COM3",
+    "baudrate": 9600,
+    "timeout": 1.0,
+    "retries": 3
   },
-  "battery_voltage": {
-    "register": 1,
-    "scale": 0.1,
-    "unit": "V"
-  },
-  "battery_current": {
-    "register": 2,
-    "scale": 0.1,
-    "unit": "A"
-  },
-  "status": {
-    "register": 3,
-    "scale": 1,
-    "unit": "code"
+  "inverters": [
+    { "id": 1, "slave_id": 1 },
+    { "id": 2, "slave_id": 2 },
+    { "id": 3, "slave_id": 3 }
+  ],
+  "register_map": {
+    "power_w": {
+      "address": 0,
+      "count": 1,
+      "scale": 1,
+      "unit": "W"
+    },
+    "battery_voltage": {
+      "address": 1,
+      "count": 1,
+      "scale": 0.1,
+      "unit": "V"
+    },
+    "battery_current": {
+      "address": 2,
+      "count": 1,
+      "scale": 0.1,
+      "unit": "A"
+    },
+    "inverter_state": {
+      "address": 3,
+      "count": 1,
+      "scale": 1,
+      "unit": "enum",
+      "states": {
+        "0": "OFF",
+        "1": "ON",
+        "2": "FAULT"
+      }
+    }
   }
 }

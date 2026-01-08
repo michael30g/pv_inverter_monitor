@@ -1,46 +1,75 @@
 from pymodbus.client import ModbusSerialClient
-from pymodbus.exceptions import ModbusIOException
-
 from core.inverter_interface import InverterInterface
+from core.logger import get_logger
+import time
 
 
 class ModbusInverter(InverterInterface):
-    def __init__(self, port: str, slave_id: int, baudrate=9600, timeout=1):
-        self.port = port
+    """
+    Inversor real vía Modbus RTU (RS485)
+    """
+
+    def __init__(
+        self,
+        port: str,
+        slave_id: int,
+        baudrate: int = 9600,
+        timeout: float = 1.0,
+        retries: int = 3,
+    ):
         self.slave_id = slave_id
-        self.baudrate = baudrate
-        self.timeout = timeout
+        self.retries = retries
+        self.logger = get_logger(f"ModbusInverter-{slave_id}")
 
         self.client = ModbusSerialClient(
-            port=self.port,
-            baudrate=self.baudrate,
-            timeout=self.timeout,
-            parity='N',
+            port=port,
+            baudrate=baudrate,
+            timeout=timeout,
+            parity="N",
             stopbits=1,
-            bytesize=8
+            bytesize=8,
         )
 
-    def connect(self):
+        self.logger.info(
+            f"Modbus inverter created | port={port} slave={slave_id}"
+        )
+
+    def connect(self) -> bool:
         if not self.client.connect():
-            raise ConnectionError(f"No se pudo conectar al puerto {self.port}")
-        print(f"[INFO] RS485 conectado en {self.port}")
+            self.logger.error("Failed to connect to Modbus device")
+            return False
+
+        self.logger.info("Modbus connection established")
+        return True
 
     def read_registers(self, address: int, count: int):
-        try:
-            result = self.client.read_holding_registers(
-                address=address,
-                count=count,
-                slave=self.slave_id
-            )
+        for attempt in range(1, self.retries + 1):
+            try:
+                self.logger.info(
+                    f"Reading Modbus registers | attempt={attempt} "
+                    f"address={address} count={count}"
+                )
 
-            if result.isError():
-                raise ModbusIOException(result)
+                response = self.client.read_holding_registers(
+                    address=address,
+                    count=count,
+                    slave=self.slave_id,
+                )
 
-            return result.registers
+                if response.isError():
+                    raise Exception(response)
 
-        except Exception as e:
-            print(f"[ERROR] Modbus read failed: {e}")
-            return [None] * count
+                return response.registers
+
+            except Exception as e:
+                self.logger.warning(
+                    f"Read failed (attempt {attempt}): {e}"
+                )
+                time.sleep(0.2)
+
+        self.logger.error("All retries failed")
+        raise RuntimeError("Modbus read failed")
 
     def close(self):
         self.client.close()
+        self.logger.info("Modbus connection closed")
