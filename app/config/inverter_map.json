@@ -41,5 +41,21 @@
         "2": "FAULT"
       }
     }
+  },
+  "limits": {
+    "battery_voltage": {
+      "min": 44.0,
+      "max": 54.0,
+      "severity": "critical"
+    },
+    "battery_current": {
+      "max": 25.0,
+      "severity": "warning"
+    },
+    "inverter_state": {
+      "FAULT": {
+        "severity": "critical"
+      }
+    }
   }
 }

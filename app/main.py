@@ -1,5 +1,7 @@
 from pathlib import Path
 import time
+from core.alarm_engine import AlarmEngine
+
 
 from devices.inverter_manager import InverterManager
 from devices.inverter_factory import InverterFactory
@@ -16,6 +18,7 @@ def main():
 
     # Crear parser de registros (UNA sola vez)
     parser = RegisterParser(factory.config["register_map"])
+    alarm_engine = AlarmEngine(factory.config["limits"])
 
     # Crear e insertar inversores
     for inv in factory.config["inverters"]:
@@ -29,6 +32,16 @@ def main():
 
             # Parsear a valores físicos
             parsed_data = parser.parse(raw_data)
+            alarms = alarm_engine.evaluate(parsed_data)
+
+            for inv_id, inv_alarms in alarms.items():
+                for alarm in inv_alarms:
+                    print(
+                        f"ALARM | Inverter {inv_id} | "
+                        f"{alarm['signal']} = {alarm['value']} "
+                        f"({alarm['severity']})"
+                    )
+
 
             print("---- DATA SNAPSHOT ----")
             for inv_id, values in parsed_data.items():
