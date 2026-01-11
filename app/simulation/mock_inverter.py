@@ -1,34 +1,25 @@
-from core.inverter_interface import InverterInterface
-from core.logger import get_logger
 import random
+from core.inverter_interface import InverterInterface
 
 
 class MockInverter(InverterInterface):
+    """
+    Simula un inversor solar para pruebas sin hardware
+    """
+
     def __init__(self, slave_id: int):
         self.slave_id = slave_id
-        self.logger = get_logger(f"MockInverter-{slave_id}")
-        self.logger.info("Mock inverter initialized")
 
     def read_registers(self, address: int, count: int):
-        self.logger.info(
-            f"Reading registers | address={address} count={count}"
-        )
+        # Simulación simple de registros
+        power = random.randint(0, 5000)          # W
+        voltage = random.randint(480, 560)       # 48.0–56.0 V
+        current = random.randint(-100, 100)      # -10.0–10.0 A
+        state = random.choice([0, 1])             # 0=idle,1=active
 
-        registers = []
-
-        for offset in range(count):
-            reg = address + offset
-
-            if reg == 0:
-                registers.append(random.randint(500, 2000))  # Power (W)
-            elif reg == 1:
-                registers.append(random.randint(480, 540))   # Battery V x10
-            elif reg == 2:
-                registers.append(random.randint(0, 200))     # Battery A x10
-            elif reg == 3:
-                registers.append(random.choice([0, 1, 2]))   # State
-            else:
-                registers.append(0)
-
-        self.logger.info(f"Registers read: {registers}")
-        return registers
+        return [
+            power,
+            voltage,
+            current,
+            state,
+        ]

@@ -1,33 +1,21 @@
 class RegisterParser:
     def __init__(self, register_map: dict):
-        self.map = register_map
+        self.register_map = register_map
 
-    def parse(self, raw_registers: dict) -> dict:
-        """
-        raw_registers:
-        {
-          inverter_id: [reg0, reg1, reg2, ...]
-        }
-        """
-
+    def parse(self, registers: list) -> dict:
         parsed = {}
 
-        for inv_id, regs in raw_registers.items():
-            parsed[inv_id] = {}
+        for name, cfg in self.register_map.items():
+            addr = cfg["address"]
+            scale = cfg.get("scale", 1)
 
-            for name, cfg in self.map.items():
-                addr = cfg["address"]
-                value = regs[addr]
+            raw = registers[addr]
+            value = raw * scale
 
-                if cfg.get("unit") == "enum":
-                    state_map = cfg.get("states", {})
-                    parsed_value = state_map.get(str(value), "UNKNOWN")
-                else:
-                    parsed_value = value * cfg.get("scale", 1)
+            if cfg.get("unit") == "enum":
+                states = cfg.get("states", {})
+                value = states.get(str(raw), "UNKNOWN")
 
-                parsed[inv_id][name] = {
-                    "value": parsed_value,
-                    "unit": cfg.get("unit"),
-                }
+            parsed[name] = value
 
         return parsed

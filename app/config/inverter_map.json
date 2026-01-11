@@ -1,11 +1,5 @@
 {
   "mode": "mock",
-  "modbus": {
-    "port": "COM3",
-    "baudrate": 9600,
-    "timeout": 1.0,
-    "retries": 3
-  },
   "inverters": [
     { "id": 1, "slave_id": 1 },
     { "id": 2, "slave_id": 2 },
@@ -34,28 +28,7 @@
       "address": 3,
       "count": 1,
       "scale": 1,
-      "unit": "enum",
-      "states": {
-        "0": "OFF",
-        "1": "ON",
-        "2": "FAULT"
-      }
-    }
-  },
-  "limits": {
-    "battery_voltage": {
-      "min": 44.0,
-      "max": 54.0,
-      "severity": "critical"
-    },
-    "battery_current": {
-      "max": 25.0,
-      "severity": "warning"
-    },
-    "inverter_state": {
-      "FAULT": {
-        "severity": "critical"
-      }
+      "unit": "enum"
     }
   }
 }

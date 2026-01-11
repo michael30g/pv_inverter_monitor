@@ -1,15 +1,19 @@
 import json
 from pathlib import Path
 
+from core.logger import get_logger
 from simulation.mock_inverter import MockInverter
 from core.modbus_inverter import ModbusInverter
-from core.logger import get_logger
 
 
 class InverterFactory:
+    """
+    Crea instancias de inversores (mock o modbus real)
+    a partir del archivo de configuración JSON
+    """
+
     def __init__(self, config_path: Path):
         self.logger = get_logger("InverterFactory")
-        self.config_path = config_path
 
         with open(config_path, "r", encoding="utf-8") as f:
             self.config = json.load(f)
@@ -21,16 +25,14 @@ class InverterFactory:
         if self.mode == "mock":
             return MockInverter(slave_id=inverter_cfg["slave_id"])
 
-        if self.mode == "modbus":
-            mb = self.config["modbus"]
-            inverter = ModbusInverter(
-                port=mb["port"],
+        elif self.mode == "modbus":
+            modbus_cfg = self.config["modbus"]
+            return ModbusInverter(
                 slave_id=inverter_cfg["slave_id"],
-                baudrate=mb["baudrate"],
-                timeout=mb["timeout"],
-                retries=mb["retries"],
+                port=modbus_cfg["port"],
+                baudrate=modbus_cfg["baudrate"],
+                timeout=modbus_cfg["timeout"],
             )
-            inverter.connect()
-            return inverter
 
-        raise ValueError(f"Unknown mode: {self.mode}")
+        else:
+            raise ValueError(f"Unknown inverter mode: {self.mode}")
